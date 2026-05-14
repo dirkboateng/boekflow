@@ -167,3 +167,40 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+<section id="pricing" className="px-6 py-24 bg-paper border-y border-line">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-5xl font-semibold tracking-tight-2 mb-4">
+              {pricing.title}
+            </h2>
+            <p className="text-lg text-ink-soft">
+              {pricing.subtitle}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {pricing.tiers?.map((tier: any, i: number) => (
+              <div key={i} className={`relative rounded-2xl p-8 flex flex-col ${tier.popular ? "bg-ink text-cream" : "bg-cream border border-line"}`}>
+                {tier.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-lime text-ink text-xs font-medium">
+                    Meest gekozen
+                  </div>
+                )}
+                <div className={`text-sm font-medium mb-2 ${tier.popular ? "text-cream/70" : "text-slate"}`}>
+                  {tier.subtitle}
+                </div>
+                <h3 className={`font-display text-3xl font-semibold tracking-tight-2 mb-4 ${tier.popular ? "text-cream" : "text-ink"}`}>
+                  {tier.name}
+                </h3>
+                <div className="mb-6">
+                  <span className={`font-display text-5xl font-semibold tracking-tight-2 ${tier.popular ? "text-cream" : "text-ink"}`}>
+                    €{tier.price}
+                  </span>
+                  <span className={tier.popular ? "text-cream/70" : "text-slate"}>
+                    /maand
+                  </span>
+                  <div className={`text-sm mt-1 ${tier.popular ? "text-cream/70" : "text-slate"}`}>
+                    + €{tier.setup} eenmalig setup
+                  </div>
+                </div>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {tier.features?.map((f: string, j:
