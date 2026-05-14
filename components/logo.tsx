@@ -25,8 +25,8 @@ export function Logo({ variant = "primary", iconOnly = false, className }: LogoP
         <path d="M 14 40 L 28 26 L 38 36 L 52 22" stroke="#C4F542" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         <circle cx="52" cy="22" r="3.5" fill="#C4F542" />
       </svg>
-      <span className={`font-display text-2xl font-semibold tracking-tight-2 leading-none ${textColor}`}>
-        boekflow
+      <span className={`font-display text-2xl font-semibold leading-none ${textColor}`} style={{ letterSpacing: "-1.2px" }}>
+        boekflow<span className="text-lime-deep">.</span>
       </span>
     </div>
   );
