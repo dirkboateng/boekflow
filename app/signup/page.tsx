@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function SignupPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="w-full max-w-md text-center">
+          <Logo className="h-9 w-auto mx-auto mb-8" />
           <div className="w-16 h-16 rounded-full bg-lime mx-auto mb-6 flex items-center justify-center">
             <span className="text-2xl font-display font-bold text-ink">✓</span>
           </div>
@@ -50,11 +52,12 @@ export default function SignupPage() {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        <Link href="/" className="block mb-8 text-2xl font-display font-semibold tracking-tight-2">
-          boekflow
+        <Link href="/" className="block mb-8">
+          <Logo className="h-9 w-auto" />
         </Link>
         <div className="bg-paper border border-line rounded-2xl p-8">
           <h1 className="font-display text-3xl font-semibold tracking-tight-2 mb-2">Start gratis</h1>
