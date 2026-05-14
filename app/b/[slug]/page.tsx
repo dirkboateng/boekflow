@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { ArrowRight, Calendar, Sparkle } from "@/lib/icons";
 
@@ -112,13 +113,14 @@ export default async function PublicBusinessPage({ params }: PageProps) {
                     >
                       €{(service.price_cents / 100).toFixed(2).replace(".", ",")}
                     </div>
-                    <button
+                    <Link
+                      href={`/b/${slug}/boek/${service.id}`}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-cream font-medium text-sm hover:opacity-90 transition"
                       style={{ backgroundColor: brandColor, letterSpacing: "-0.2px" }}
                     >
                       Boeken
                       <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               ))}
