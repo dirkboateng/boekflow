@@ -89,3 +89,81 @@ export default async function HomePage() {
               const Icon = ICONS[item.icon];
               return (
                 <div key={i} className="bg-cream
+<section id="hoe" className="px-6 py-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-5xl font-semibold tracking-tight-2 mb-4">
+              {howItWorks.title}
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {howItWorks.items?.map((item: any, i: number) => (
+              <div key={i} className="bg-paper border border-line rounded-2xl p-8">
+                <div className="font-display text-5xl font-semibold text-lime-deep mb-4">
+                  {item.step}
+                </div>
+                <h3 className="font-display text-2xl font-semibold tracking-tight-2 mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-ink-soft leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="px-6 py-24 bg-ink text-cream">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-5xl font-semibold tracking-tight-2 mb-4 text-cream">
+              {features.title}
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.items?.map((item: any, i: number) => {
+              const Icon = ICONS[item.icon];
+              return (
+                <div key={i} className="bg-ink-soft/50 border border-cream/10 rounded-2xl p-6">
+                  <div className="w-12 h-12 rounded-xl bg-lime flex items-center justify-center mb-5 text-ink">
+                    {Icon && <Icon className="w-6 h-6" />}
+                  </div>
+                  <h3 className="font-display text-xl font-semibold tracking-tight-2 mb-2 text-cream">
+                    {item.title}
+                  </h3>
+                  <p className="text-cream/70 text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-5xl font-semibold tracking-tight-2 mb-4">
+              {testimonials.title}
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.items?.map((item: any, i: number) => (
+              <div key={i} className="bg-paper border border-line rounded-2xl p-8 flex flex-col">
+                <div className="inline-flex items-center gap-2 mb-6 px-3 py-1 rounded-full bg-lime/20 border border-lime-deep/20 text-xs font-medium text-ink self-start">
+                  {item.metric}
+                </div>
+                <p className="text-ink leading-relaxed mb-6 flex-1">
+                  &ldquo;{item.quote}&rdquo;
+                </p>
+                <div className="border-t border-line pt-4">
+                  <div className="font-medium text-ink">{item.name}</div>
+                  <div className="text-sm text-slate">{item.business}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
