@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +26,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen flex">
       <aside className="w-64 bg-ink text-cream p-6 flex flex-col">
-        <div className="text-xl font-display font-semibold mb-8 text-cream">
-          boekflow <span className="text-lime text-sm">admin</span>
+        <div className="flex items-center gap-2 mb-8">
+          <Logo variant="light" className="h-7 w-auto" />
+          <span className="text-lime text-sm font-medium">admin</span>
         </div>
         <nav className="space-y-1 flex-1">
           <Link href="/admin" className="block px-3 py-2 rounded-lg text-cream/80 hover:bg-ink-soft hover:text-cream text-sm">
