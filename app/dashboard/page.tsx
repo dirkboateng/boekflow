@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import LogoutButton from "./logout-button";
+import { Logo } from "@/components/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen p-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-12">
-        <div className="text-2xl font-display font-semibold tracking-tight-2">boekflow</div>
+        <Logo className="h-9 w-auto" />
         <LogoutButton />
       </div>
       <div className="bg-paper border border-line rounded-2xl p-8 mb-6">
