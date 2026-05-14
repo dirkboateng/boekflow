@@ -1,37 +1,91 @@
 import Link from "next/link";
+import { getAllContent } from "@/lib/content";
+import { ICONS, Check, ArrowRight } from "@/lib/icons";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const content = await getAllContent();
+  const hero = content.hero || {};
+  const welcomeDeal = content.welcome_deal || {};
+  const voorWie = content.voor_wie || {};
+  const howItWorks = content.how_it_works || {};
+  const features = content.features || {};
+  const pricing = content.pricing || {};
+  const testimonials = content.testimonials || {};
+  const faq = content.faq || {};
+  const footer = content.footer || {};
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="max-w-2xl text-center">
-        <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full bg-paper border border-line text-sm text-ink-soft">
-          <span className="w-2 h-2 rounded-full bg-lime"></span>
-          Sessie 1: setup compleet
+    <div className="min-h-screen">
+      <nav className="border-b border-line bg-cream/80 backdrop-blur sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-2xl font-display font-semibold tracking-tight-2">
+            boekflow
+          </Link>
+          <div className="hidden md:flex items-center gap-8 text-sm text-ink-soft">
+            <a href="#voor-wie" className="hover:text-ink">Voor wie</a>
+            <a href="#hoe" className="hover:text-ink">Hoe het werkt</a>
+            <a href="#features" className="hover:text-ink">Features</a>
+            <a href="#pricing" className="hover:text-ink">Prijzen</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium text-ink-soft hover:text-ink">
+              Inloggen
+            </Link>
+            <Link href="/signup" className="text-sm font-medium px-4 py-2 rounded-xl bg-ink text-cream hover:bg-ink-soft transition">
+              Gratis starten
+            </Link>
+          </div>
         </div>
+      </nav>
 
-        <h1 className="font-display text-6xl md:text-8xl font-semibold tracking-tight-3 leading-none mb-6">
+      {welcomeDeal.active && (
+        <div className="bg-lime text-ink py-3 text-center text-sm font-medium">
+          {welcomeDeal.text}
+        </div>
+      )}
+
+      <section className="px-6 pt-20 pb-32 max-w-5xl mx-auto text-center">
+        {hero.badge && (
+          <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full bg-paper border border-line text-sm text-ink-soft">
+            <span className="w-2 h-2 rounded-full bg-lime"></span>
+            {hero.badge}
+          </div>
+        )}
+        <h1 className="font-display text-6xl md:text-8xl font-semibold tracking-tight-3 leading-none mb-8">
           Volle agenda.
           <br />
-          <span className="inline-block bg-lime px-3 rounded-xl -rotate-1">
+          <span className="inline-block bg-lime px-4 rounded-2xl -rotate-1 mt-2">
             Automatisch.
           </span>
         </h1>
-
-        <p className="text-lg text-ink-soft max-w-xl mx-auto mb-10 leading-relaxed">
-          BoekFlow is een AI assistent die zelf klanten benadert via WhatsApp,
-          SMS en email. Werkt voor barbers, beauty salons, fysio, personal
-          trainers en elke andere business met afspraken.
+        <p className="text-xl text-ink-soft max-w-2xl mx-auto mb-12 leading-relaxed">
+          {hero.subtitle}
         </p>
-
         <div className="flex gap-3 justify-center flex-wrap">
-          <Link href="/signup" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-ink text-cream text-sm font-medium hover:bg-ink-soft transition">
-            Account aanmaken
+          <Link href="/signup" className="inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-ink text-cream font-medium hover:bg-ink-soft transition">
+            {hero.cta_primary || "Start gratis"}
+            <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-paper text-ink border border-line text-sm font-medium hover:bg-cream transition">
-            Inloggen
-          </Link>
+          <a href="#hoe" className="inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-paper text-ink border border-line font-medium hover:bg-cream transition">
+            {hero.cta_secondary || "Hoe werkt het"}
+          </a>
         </div>
-      </div>
-    </div>
-  );
-}
+      </section>
+
+      <section id="voor-wie" className="px-6 py-24 bg-paper border-y border-line">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-5xl font-semibold tracking-tight-2 mb-4">
+              {voorWie.title}
+            </h2>
+            <p className="text-lg text-ink-soft max-w-2xl mx-auto">
+              {voorWie.subtitle}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {voorWie.items?.map((item: any, i: number) => {
+              const Icon = ICONS[item.icon];
+              return (
+                <div key={i} className="bg-cream
