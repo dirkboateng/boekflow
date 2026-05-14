@@ -2,24 +2,30 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        ink: { DEFAULT: "#0F1737", soft: "#2A3258" },
-        lime: { DEFAULT: "#C4F542", deep: "#9FCD2C" },
+        ink: "#0F1737",
+        "ink-soft": "#2A3258",
+        lime: "#C4F542",
+        "lime-deep": "#9FCD2C",
         cream: "#FAF7F0",
         paper: "#FFFFFF",
-        slate: { DEFAULT: "#8B92A8", light: "#C8CDD9" },
-        line: { DEFAULT: "#E8E5DC", soft: "#F0EDE5" },
+        slate: "#8B92A8",
+        line: "#E8E5DC",
+        danger: "#DC2626",
       },
       fontFamily: {
-        display: ["var(--font-bricolage)", "system-ui", "sans-serif"],
-        body: ["var(--font-geist)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
       },
-      letterSpacing: { "tight-2": "-0.02em", "tight-3": "-0.03em" },
     },
   },
   plugins: [],
