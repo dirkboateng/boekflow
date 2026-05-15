@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/dashboard-ui";
+import { InstellingenForm } from "@/components/instellingen-form";
 
 export const dynamic = "force-dynamic";
 
@@ -11,46 +12,32 @@ export default async function InstellingenPage() {
 
   const { data: businesses } = await supabase
     .from("businesses")
-    .select("*")
+    .select("id, name, slug, category, email, phone, city, description, brand_color")
     .eq("owner_id", user?.id ?? "");
 
   const business = businesses?.[0];
+
+  if (!business) {
+    return (
+      <div className="p-10 max-w-3xl">
+        <PageHeader
+          title="Instellingen"
+          description="Beheer je bedrijfsgegevens en branding."
+        />
+        <div className="bg-paper border border-line rounded-2xl p-10 text-center">
+          <p className="text-ink-soft">Geen business gevonden.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-10 max-w-3xl">
       <PageHeader
         title="Instellingen"
-        description="Beheer je bedrijfsgegevens, branding en automatiseringsregels."
+        description="Beheer je bedrijfsgegevens en branding. Wijzigingen zijn direct live op je publieke pagina."
       />
-
-      <div className="bg-paper border border-line rounded-2xl p-8">
-        <h2
-          className="font-display font-semibold text-ink mb-6"
-          style={{ fontSize: "22px", letterSpacing: "-0.8px", lineHeight: "1.15" }}
-        >
-          Bedrijfsgegevens
-        </h2>
-        <dl className="space-y-4">
-          <Row label="Naam" value={business?.name} />
-          <Row label="URL" value={business ? `boekflow.nl/${business.slug}` : null} />
-          <Row label="Categorie" value={business?.category} />
-          <Row label="Email" value={business?.email} />
-          <Row label="Telefoon" value={business?.phone} />
-          <Row label="Stad" value={business?.city} />
-        </dl>
-        <p className="text-xs text-slate mt-6">
-          Het bewerken van instellingen komt in de volgende sessie.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <div className="flex justify-between py-2 border-b border-line last:border-b-0">
-      <dt className="text-sm text-slate">{label}</dt>
-      <dd className="text-sm font-medium text-ink">{value || "—"}</dd>
+      <InstellingenForm business={business} />
     </div>
   );
 }
