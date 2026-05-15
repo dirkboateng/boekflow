@@ -24,16 +24,34 @@ export async function updateBusiness(formData: FormData): Promise<Result> {
   const city = (formData.get("city") as string)?.trim() || null;
   const description = (formData.get("description") as string)?.trim() || null;
   const brandColor = (formData.get("brand_color") as string)?.trim() || "#0F1737";
+  const openingHoursRaw = formData.get("opening_hours") as string;
 
   if (!name) return { error: "Naam is verplicht" };
-
   if (!/^#[0-9A-Fa-f]{6}$/.test(brandColor)) {
     return { error: "Brand color moet een geldige hex code zijn, bijv #0F1737" };
   }
 
+  let openingHours = null;
+  if (openingHoursRaw) {
+    try {
+      openingHours = JSON.parse(openingHoursRaw);
+    } catch {
+      return { error: "Ongeldige openingstijden" };
+    }
+  }
+
   const { error } = await supabase
     .from("businesses")
-    .update({ name, category, email, phone, city, description, brand_color: brandColor })
+    .update({
+      name,
+      category,
+      email,
+      phone,
+      city,
+      description,
+      brand_color: brandColor,
+      opening_hours: openingHours,
+    })
     .eq("id", business.id);
 
   if (error) return { error: error.message };
