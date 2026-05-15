@@ -76,8 +76,8 @@ export function ChatInterface({ businessId, businessName }: ChatInterfaceProps) 
   }
 
   return (
-    <div className="bg-paper border border-line rounded-2xl flex flex-col" style={{ height: "calc(100vh - 280px)" }}>
-      <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+    <div className="bg-paper border border-line rounded-2xl flex flex-col h-full overflow-hidden">
+      <div className="px-6 py-3 border-b border-line flex items-center justify-between flex-shrink-0">
         <div>
           <div className="text-xs text-slate mb-0.5" style={{ letterSpacing: "0.02em" }}>
             Test chat
@@ -97,7 +97,7 @@ export function ChatInterface({ businessId, businessName }: ChatInterfaceProps) 
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 min-h-0">
         {messages.length === 0 && !sending && (
           <div className="text-center py-8">
             <div className="w-14 h-14 rounded-2xl bg-lime mx-auto mb-4 flex items-center justify-center">
@@ -131,12 +131,12 @@ export function ChatInterface({ businessId, businessName }: ChatInterfaceProps) 
       </div>
 
       {error && (
-        <div className="mx-6 mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+        <div className="mx-6 mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3 flex-shrink-0">
           {error}
         </div>
       )}
 
-      <div className="px-6 py-4 border-t border-line">
+      <div className="px-6 py-3 border-t border-line flex-shrink-0">
         <div className="flex gap-2 items-end">
           <textarea
             value={input}
@@ -157,9 +157,6 @@ export function ChatInterface({ businessId, businessName }: ChatInterfaceProps) 
             Stuur
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
-        </div>
-        <div className="text-xs text-slate mt-2">
-          Enter om te versturen, Shift+Enter voor nieuwe regel
         </div>
       </div>
     </div>
