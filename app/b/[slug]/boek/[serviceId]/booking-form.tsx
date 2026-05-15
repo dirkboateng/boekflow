@@ -73,7 +73,9 @@ function getTimeSlots(date: Date, hours: OpeningHours, durationMinutes: number):
   }
   endMinutes -= durationMinutes;
 
-  for (let m = startMinutes; m <= endMinutes; m += 30) {
+  const interval = Math.max(durationMinutes, 5);
+
+  for (let m = startMinutes; m <= endMinutes; m += interval) {
     const realM = m % (24 * 60);
     const h = Math.floor(realM / 60);
     const min = realM % 60;
@@ -238,15 +240,16 @@ export function BookingForm({
 
       {step === 2 && (
         <div>
-          <h2 className="font-display font-semibold text-ink mb-6" style={{ fontSize: "22px", letterSpacing: "-0.8px", lineHeight: "1.15" }}>
+          <h2 className="font-display font-semibold text-ink mb-2" style={{ fontSize: "22px", letterSpacing: "-0.8px", lineHeight: "1.15" }}>
             Kies een tijd
           </h2>
+          <p className="text-xs text-slate mb-6">Elke slot duurt {durationMinutes} minuten</p>
           {timeSlots.length === 0 ? (
             <div className="bg-paper border border-line rounded-2xl p-8 text-center mb-8">
               <p className="text-sm text-ink-soft">Geen tijden beschikbaar voor deze dag. Kies een andere datum.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-8">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-8 max-h-[400px] overflow-y-auto pr-1">
               {timeSlots.map((slot) => {
                 const isSelected = time === slot.time && timeIsOvernight === slot.isOvernight;
                 return (
