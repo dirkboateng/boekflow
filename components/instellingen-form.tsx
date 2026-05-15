@@ -24,6 +24,7 @@ interface Business {
   description: string | null;
   brand_color: string | null;
   opening_hours: OpeningHours | null;
+  slot_interval_minutes: number | null;
 }
 
 const CATEGORIES = [
@@ -59,6 +60,8 @@ const COLOR_PRESETS = [
   { hex: "#1E293B", name: "Slate" },
 ];
 
+const SLOT_PRESETS = [5, 10, 15, 30, 60];
+
 function getDefaultHours(): OpeningHours {
   return {
     mon: { open: "09:00", close: "17:00", closed: false },
@@ -78,6 +81,7 @@ export function InstellingenForm({ business }: { business: Business }) {
   const [saved, setSaved] = useState(false);
   const [brandColor, setBrandColor] = useState(business.brand_color || "#0F1737");
   const [hours, setHours] = useState<OpeningHours>(business.opening_hours || getDefaultHours());
+  const [slotInterval, setSlotInterval] = useState<number>(business.slot_interval_minutes ?? 30);
 
   function updateDay(dayKey: string, patch: Partial<DayHours>) {
     setHours((prev) => ({ ...prev, [dayKey]: { ...prev[dayKey], ...patch } }));
@@ -90,6 +94,7 @@ export function InstellingenForm({ business }: { business: Business }) {
     const formData = new FormData(e.currentTarget);
     formData.set("opening_hours", JSON.stringify(hours));
     formData.set("brand_color", brandColor);
+    formData.set("slot_interval_minutes", String(slotInterval));
     startTransition(async () => {
       const result = await updateBusiness(formData);
       if (result.error) {
@@ -178,6 +183,43 @@ export function InstellingenForm({ business }: { business: Business }) {
           <input type="text" required pattern="^#[0-9A-Fa-f]{6}$" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="flex-1 px-4 py-3 rounded-xl border border-line bg-paper focus:outline-none focus:border-ink text-ink text-sm font-mono" placeholder="#0F1737" />
         </div>
         <p className="text-xs text-slate">Klik het kleur vakje voor color picker, kies een preset, of plak een hex code</p>
+      </div>
+
+      <div className="bg-paper border border-line rounded-2xl p-8 space-y-5">
+        <div>
+          <h2 className="font-display font-semibold text-ink mb-1" style={{ fontSize: "20px", letterSpacing: "-0.7px", lineHeight: "1.2" }}>
+            Boekingen
+          </h2>
+          <p className="text-sm text-slate">Bepaal hoe vaak klanten een nieuwe tijdslot zien in de booking flow</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ink-soft mb-2">Tijdslot interval (minuten)</label>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {SLOT_PRESETS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setSlotInterval(m)}
+                className={`px-4 py-2 rounded-[10px] border text-sm font-medium transition ${slotInterval === m ? "border-ink bg-ink text-cream" : "border-line bg-paper text-ink hover:border-ink"}`}
+                style={{ letterSpacing: "-0.2px" }}
+              >
+                {m} min
+              </button>
+            ))}
+          </div>
+          <input
+            type="number"
+            min={1}
+            max={1440}
+            value={slotInterval}
+            onChange={(e) => setSlotInterval(Math.max(1, parseInt(e.target.value || "1", 10)))}
+            className="w-32 px-4 py-3 rounded-xl border border-line bg-paper focus:outline-none focus:border-ink text-ink text-sm"
+          />
+          <p className="text-xs text-slate mt-2">
+            Voorbeeld bij 15 min interval: 09:00, 09:15, 09:30, 09:45. Onafhankelijk van service duur.
+          </p>
+        </div>
       </div>
 
       <div className="bg-paper border border-line rounded-2xl p-8 space-y-5">
