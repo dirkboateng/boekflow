@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { buildSystemPrompt, callClaude, getBusinessContext } from "@/lib/ai";
+import { buildSystemPrompt, chatWithAI, getBusinessContext, ChatMessage } from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 
 interface ChatRequest {
   businessId: string;
-  history: { role: "user" | "assistant"; content: string }[];
+  history: ChatMessage[];
   message: string;
 }
 
@@ -49,9 +49,9 @@ export async function POST(request: NextRequest) {
   }
 
   const systemPrompt = buildSystemPrompt(business, services);
-  const allMessages = [...body.history, { role: "user" as const, content: body.message }];
+  const cleanHistory: ChatMessage[] = body.history.map((m) => ({ role: m.role, content: m.content }));
 
-  const result = await callClaude(systemPrompt, allMessages);
+  const result = await chatWithAI(systemPrompt, cleanHistory, body.message, body.businessId, services);
 
   if (result.error) {
     return NextResponse.json({ error: result.error }, { status: 500 });
@@ -67,10 +67,10 @@ export async function POST(request: NextRequest) {
     {
       business_id: body.businessId,
       role: "assistant",
-      content: result.content,
+      content: result.reply,
       channel: "test",
     },
   ]);
 
-  return NextResponse.json({ reply: result.content });
+  return NextResponse.json({ reply: result.reply, bookingMade: result.bookingMade ?? false });
 }
