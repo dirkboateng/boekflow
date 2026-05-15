@@ -12,7 +12,7 @@ export default async function InstellingenPage() {
 
   const { data: businesses } = await supabase
     .from("businesses")
-    .select("id, name, slug, category, email, phone, city, description, brand_color")
+    .select("id, name, slug, category, email, phone, city, description, brand_color, opening_hours")
     .eq("owner_id", user?.id ?? "");
 
   const business = businesses?.[0];
@@ -20,10 +20,7 @@ export default async function InstellingenPage() {
   if (!business) {
     return (
       <div className="p-10 max-w-3xl">
-        <PageHeader
-          title="Instellingen"
-          description="Beheer je bedrijfsgegevens en branding."
-        />
+        <PageHeader title="Instellingen" description="Beheer je bedrijfsgegevens en branding." />
         <div className="bg-paper border border-line rounded-2xl p-10 text-center">
           <p className="text-ink-soft">Geen business gevonden.</p>
         </div>
@@ -35,7 +32,7 @@ export default async function InstellingenPage() {
     <div className="p-10 max-w-3xl">
       <PageHeader
         title="Instellingen"
-        description="Beheer je bedrijfsgegevens en branding. Wijzigingen zijn direct live op je publieke pagina."
+        description="Beheer je bedrijfsgegevens, branding en openingstijden. Wijzigingen zijn direct live op je publieke pagina."
       />
       <InstellingenForm business={business} />
     </div>
