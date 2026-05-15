@@ -56,22 +56,30 @@ function isDayOpen(date: Date, hours: OpeningHours): boolean {
   return dayHours ? !dayHours.closed : false;
 }
 
-function getTimeSlots(date: Date, hours: OpeningHours, durationMinutes: number): string[] {
+function getTimeSlots(date: Date, hours: OpeningHours, durationMinutes: number): { time: string; isOvernight: boolean }[] {
   const dayKey = DAY_KEYS[date.getDay()];
   const dayHours = hours[dayKey];
   if (!dayHours || dayHours.closed) return [];
 
-  const slots: string[] = [];
+  const slots: { time: string; isOvernight: boolean }[] = [];
   const [openH, openM] = dayHours.open.split(":").map(Number);
   const [closeH, closeM] = dayHours.close.split(":").map(Number);
 
   const startMinutes = openH * 60 + openM;
-  const endMinutes = closeH * 60 + closeM - durationMinutes;
+  let endMinutes = closeH * 60 + closeM;
+  const isOvernightSchedule = endMinutes <= startMinutes;
+  if (isOvernightSchedule) {
+    endMinutes += 24 * 60;
+  }
+  endMinutes -= durationMinutes;
 
   for (let m = startMinutes; m <= endMinutes; m += 30) {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    slots.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+    const realM = m % (24 * 60);
+    const h = Math.floor(realM / 60);
+    const min = realM % 60;
+    const timeStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+    const isOvernight = m >= 24 * 60;
+    slots.push({ time: timeStr, isOvernight });
   }
 
   return slots;
@@ -92,6 +100,7 @@ export function BookingForm({
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState<string | null>(null);
+  const [timeIsOvernight, setTimeIsOvernight] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -113,6 +122,9 @@ export function BookingForm({
 
     const [h, m] = time.split(":").map(Number);
     const scheduledAt = new Date(date);
+    if (timeIsOvernight) {
+      scheduledAt.setDate(scheduledAt.getDate() + 1);
+    }
     scheduledAt.setHours(h, m, 0, 0);
 
     const result = await createBooking({
@@ -136,7 +148,23 @@ export function BookingForm({
     setSubmitting(false);
   }
 
+  function selectTime(slot: { time: string; isOvernight: boolean }) {
+    setTime(slot.time);
+    setTimeIsOvernight(slot.isOvernight);
+  }
+
+  function getDisplayDate(): Date | null {
+    if (!date) return null;
+    if (timeIsOvernight) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + 1);
+      return d;
+    }
+    return date;
+  }
+
   if (confirmed) {
+    const displayDate = getDisplayDate();
     return (
       <div className="bg-paper border border-line rounded-2xl p-10 text-center">
         <div className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-cream" style={{ backgroundColor: brandColor }}>
@@ -149,7 +177,7 @@ export function BookingForm({
           We hebben je boeking voor <strong className="text-ink">{serviceName}</strong> ontvangen.
         </p>
         <p className="text-ink-soft mb-8" style={{ fontSize: "16px", lineHeight: "1.55" }}>
-          {date?.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })} om {time}
+          {displayDate?.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })} om {time}
         </p>
         <p className="text-sm text-slate mb-6">
           {businessName} bevestigt je afspraak via WhatsApp of email.
@@ -219,11 +247,17 @@ export function BookingForm({
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-8">
-              {timeSlots.map((t) => {
-                const isSelected = time === t;
+              {timeSlots.map((slot) => {
+                const isSelected = time === slot.time && timeIsOvernight === slot.isOvernight;
                 return (
-                  <button key={t} onClick={() => setTime(t)} className={`py-2.5 rounded-xl border transition font-medium text-sm ${isSelected ? "border-ink bg-ink text-cream" : "border-line bg-paper hover:border-ink text-ink"}`} style={{ letterSpacing: "-0.2px" }}>
-                    {t}
+                  <button
+                    key={`${slot.time}-${slot.isOvernight}`}
+                    onClick={() => selectTime(slot)}
+                    className={`py-2.5 rounded-xl border transition font-medium text-sm ${isSelected ? "border-ink bg-ink text-cream" : "border-line bg-paper hover:border-ink text-ink"}`}
+                    style={{ letterSpacing: "-0.2px" }}
+                  >
+                    {slot.time}
+                    {slot.isOvernight && <span className="block text-[10px] opacity-60 font-normal">volgende dag</span>}
                   </button>
                 );
               })}
@@ -284,7 +318,7 @@ export function BookingForm({
           <div className="bg-paper border border-line rounded-2xl p-6 mb-6">
             <dl className="space-y-3">
               <Row label="Service" value={serviceName} />
-              <Row label="Datum" value={date?.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }) ?? ""} />
+              <Row label="Datum" value={getDisplayDate()?.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }) ?? ""} />
               <Row label="Tijd" value={time ?? ""} />
               <Row label="Naam" value={name} />
               <Row label="Email" value={email} />
