@@ -76,7 +76,10 @@ export function ChatInterface({ businessId, businessName }: ChatInterfaceProps) 
   }
 
   return (
-    <div className="bg-paper border border-line rounded-2xl flex flex-col h-full overflow-hidden">
+    <div
+      className="bg-paper border border-line rounded-2xl flex flex-col overflow-hidden"
+      style={{ height: "calc(100vh - 160px)", minHeight: "500px" }}
+    >
       <div className="px-6 py-3 border-b border-line flex items-center justify-between flex-shrink-0">
         <div>
           <div className="text-xs text-slate mb-0.5" style={{ letterSpacing: "0.02em" }}>
