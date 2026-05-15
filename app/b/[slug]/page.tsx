@@ -6,6 +6,26 @@ import { ArrowRight, Calendar, Sparkle } from "@/lib/icons";
 
 export const dynamic = "force-dynamic";
 
+interface DayHours {
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+type OpeningHours = Record<string, DayHours>;
+
+const DAY_LABELS: { key: string; label: string }[] = [
+  { key: "mon", label: "Maandag" },
+  { key: "tue", label: "Dinsdag" },
+  { key: "wed", label: "Woensdag" },
+  { key: "thu", label: "Donderdag" },
+  { key: "fri", label: "Vrijdag" },
+  { key: "sat", label: "Zaterdag" },
+  { key: "sun", label: "Zondag" },
+];
+
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -32,6 +52,12 @@ export default async function PublicBusinessPage({ params }: PageProps) {
 
   const brandColor = business.brand_color || "#0F1737";
   const whatsappNumber = business.phone ? business.phone.replace(/[^0-9]/g, "") : "";
+  const hours: OpeningHours | null = business.opening_hours;
+
+  const today = new Date();
+  const todayKey = DAY_KEYS[today.getDay()];
+  const todayHours = hours?.[todayKey];
+  const isOpenToday = todayHours && !todayHours.closed;
 
   return (
     <div className="min-h-screen bg-cream">
@@ -48,14 +74,26 @@ export default async function PublicBusinessPage({ params }: PageProps) {
               {business.description}
             </p>
           )}
-          {business.city && (
-            <div className="mt-6 text-sm text-cream/60">{business.city}</div>
-          )}
+          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-cream/70">
+            {business.city && <span>{business.city}</span>}
+            {hours && isOpenToday && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-lime" />
+                Nu open tot {todayHours.close}
+              </span>
+            )}
+            {hours && !isOpenToday && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cream/40" />
+                Vandaag gesloten
+              </span>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="px-6 py-16 max-w-3xl mx-auto">
-        <section className="mb-12">
+      <main className="px-6 py-16 max-w-3xl mx-auto space-y-12">
+        <section>
           <h2 className="font-display font-semibold text-ink mb-6" style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-1.3px", lineHeight: "1" }}>
             Services<span className="text-lime-deep">.</span>
           </h2>
@@ -98,6 +136,42 @@ export default async function PublicBusinessPage({ params }: PageProps) {
             </div>
           )}
         </section>
+
+        {hours && (
+          <section>
+            <h2 className="font-display font-semibold text-ink mb-6" style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-1.3px", lineHeight: "1" }}>
+              Openingstijden<span className="text-lime-deep">.</span>
+            </h2>
+            <div className="bg-paper border border-line rounded-2xl overflow-hidden">
+              {DAY_LABELS.map((day, idx) => {
+                const dayHours = hours[day.key];
+                const isToday = todayKey === day.key;
+                return (
+                  <div
+                    key={day.key}
+                    className={`flex items-center justify-between px-6 py-3.5 ${idx > 0 ? "border-t border-line" : ""} ${isToday ? "bg-cream" : ""}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${isToday ? "font-semibold text-ink" : "font-medium text-ink"}`}>
+                        {day.label}
+                      </span>
+                      {isToday && (
+                        <span className="text-xs text-slate" style={{ letterSpacing: "0.02em" }}>
+                          vandaag
+                        </span>
+                      )}
+                    </div>
+                    {dayHours && !dayHours.closed ? (
+                      <span className="text-sm text-ink font-mono">{dayHours.open} - {dayHours.close}</span>
+                    ) : (
+                      <span className="text-sm text-slate">Gesloten</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <section className="bg-paper border border-line rounded-2xl p-8">
           <div className="flex items-center gap-4">
