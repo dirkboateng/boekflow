@@ -22,6 +22,7 @@ interface BookingFormProps {
   businessName: string;
   brandColor: string;
   openingHours: OpeningHours | null;
+  slotIntervalMinutes: number;
 }
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -56,7 +57,12 @@ function isDayOpen(date: Date, hours: OpeningHours): boolean {
   return dayHours ? !dayHours.closed : false;
 }
 
-function getTimeSlots(date: Date, hours: OpeningHours, durationMinutes: number): { time: string; isOvernight: boolean }[] {
+function getTimeSlots(
+  date: Date,
+  hours: OpeningHours,
+  durationMinutes: number,
+  intervalMinutes: number
+): { time: string; isOvernight: boolean }[] {
   const dayKey = DAY_KEYS[date.getDay()];
   const dayHours = hours[dayKey];
   if (!dayHours || dayHours.closed) return [];
@@ -73,7 +79,7 @@ function getTimeSlots(date: Date, hours: OpeningHours, durationMinutes: number):
   }
   endMinutes -= durationMinutes;
 
-  const interval = Math.max(durationMinutes, 5);
+  const interval = Math.max(intervalMinutes, 1);
 
   for (let m = startMinutes; m <= endMinutes; m += interval) {
     const realM = m % (24 * 60);
@@ -96,6 +102,7 @@ export function BookingForm({
   businessName,
   brandColor,
   openingHours,
+  slotIntervalMinutes,
 }: BookingFormProps) {
   const router = useRouter();
   const hours = openingHours || DEFAULT_HOURS;
@@ -112,7 +119,7 @@ export function BookingForm({
   const [confirmed, setConfirmed] = useState(false);
 
   const dateOptions = getDateOptions();
-  const timeSlots = date ? getTimeSlots(date, hours, durationMinutes) : [];
+  const timeSlots = date ? getTimeSlots(date, hours, durationMinutes, slotIntervalMinutes) : [];
 
   async function handleSubmit() {
     if (!date || !time) {
@@ -243,7 +250,7 @@ export function BookingForm({
           <h2 className="font-display font-semibold text-ink mb-2" style={{ fontSize: "22px", letterSpacing: "-0.8px", lineHeight: "1.15" }}>
             Kies een tijd
           </h2>
-          <p className="text-xs text-slate mb-6">Elke slot duurt {durationMinutes} minuten</p>
+          <p className="text-xs text-slate mb-6">Afspraak duurt {durationMinutes} minuten</p>
           {timeSlots.length === 0 ? (
             <div className="bg-paper border border-line rounded-2xl p-8 text-center mb-8">
               <p className="text-sm text-ink-soft">Geen tijden beschikbaar voor deze dag. Kies een andere datum.</p>
