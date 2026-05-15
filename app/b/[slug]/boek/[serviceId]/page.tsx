@@ -16,7 +16,7 @@ export default async function BookingPage({ params }: PageProps) {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("*")
+    .select("id, name, slug, brand_color, opening_hours")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -53,10 +53,7 @@ export default async function BookingPage({ params }: PageProps) {
           <div className="text-xs uppercase text-slate mb-2" style={{ letterSpacing: "0.12em" }}>
             Booking
           </div>
-          <h1
-            className="font-display font-semibold text-ink mb-3"
-            style={{ fontSize: "clamp(32px, 5vw, 48px)", letterSpacing: "-1.5px", lineHeight: "1" }}
-          >
+          <h1 className="font-display font-semibold text-ink mb-3" style={{ fontSize: "clamp(32px, 5vw, 48px)", letterSpacing: "-1.5px", lineHeight: "1" }}>
             {service.name}<span className="text-lime-deep">.</span>
           </h1>
           <div className="flex items-center gap-3 text-sm text-ink-soft">
@@ -76,6 +73,7 @@ export default async function BookingPage({ params }: PageProps) {
           pricecents={service.price_cents}
           businessName={business.name}
           brandColor={brandColor}
+          openingHours={business.opening_hours}
         />
       </main>
     </div>
