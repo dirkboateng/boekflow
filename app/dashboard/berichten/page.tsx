@@ -31,18 +31,16 @@ export default async function BerichtenPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col p-6 md:p-8 max-w-5xl mx-auto">
-      <div className="mb-4 flex-shrink-0">
-        <h1 className="font-display font-semibold text-ink mb-1" style={{ fontSize: "32px", letterSpacing: "-1.2px", lineHeight: "1" }}>
+    <div className="p-6 md:p-8 max-w-5xl mx-auto">
+      <div className="mb-4">
+        <h1 className="font-display font-semibold text-ink mb-1" style={{ fontSize: "28px", letterSpacing: "-1.2px", lineHeight: "1" }}>
           Berichten<span className="text-lime-deep">.</span>
         </h1>
         <p className="text-sm text-ink-soft" style={{ lineHeight: "1.5" }}>
           Test je AI assistent voordat WhatsApp koppeling actief is.
         </p>
       </div>
-      <div className="flex-1 min-h-0">
-        <ChatInterface businessId={business.id} businessName={business.name} />
-      </div>
+      <ChatInterface businessId={business.id} businessName={business.name} />
     </div>
   );
 }
