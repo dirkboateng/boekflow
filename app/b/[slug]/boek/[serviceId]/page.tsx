@@ -16,7 +16,7 @@ export default async function BookingPage({ params }: PageProps) {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, brand_color, opening_hours")
+    .select("id, name, slug, brand_color, opening_hours, slot_interval_minutes")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -74,6 +74,7 @@ export default async function BookingPage({ params }: PageProps) {
           businessName={business.name}
           brandColor={brandColor}
           openingHours={business.opening_hours}
+          slotIntervalMinutes={business.slot_interval_minutes ?? 30}
         />
       </main>
     </div>
