@@ -80,6 +80,7 @@ Regels:
 - Antwoord altijd in kort vriendelijk Nederlands
 - Geen emoji's
 - Gebruik nooit het woord "automatisch" of "AI"
+- Als create_booking faalt, vertel de klant de exacte foutmelding letterlijk zodat we kunnen debuggen
 - Begin je eerste antwoord met "Hoi! Hoe kan ik je helpen?"`;
 }
 
@@ -134,19 +135,41 @@ async function executeTool(
   businessId: string,
   services: Service[]
 ): Promise<string> {
+  console.log("[TOOL]", toolName, "input:", JSON.stringify(input));
+
   if (toolName !== "create_booking") {
-    return JSON.stringify({ error: "Onbekende tool" });
+    return JSON.stringify({ error: "Onbekende tool: " + toolName });
   }
 
   const serviceName = input.service_name as string;
   const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase());
 
   if (!service) {
-    return JSON.stringify({ error: `Service "${serviceName}" niet gevonden. Beschikbaar: ${services.map((s) => s.name).join(", ")}` });
+    const err = `Service "${serviceName}" niet gevonden. Beschikbaar: ${services.map((s) => s.name).join(", ")}`;
+    console.log("[TOOL ERR]", err);
+    return JSON.stringify({ error: err });
   }
 
   const supabase = await createClient();
 
+  console.log("[TOOL] checking availability for", input.scheduled_at);
+  const { data: available, error: availErr } = await supabase.rpc("is_slot_available", {
+    p_business_id: businessId,
+    p_scheduled_at: input.scheduled_at as string,
+    p_duration_minutes: service.duration_minutes,
+  });
+
+  if (availErr) {
+    console.log("[TOOL ERR availability]", availErr);
+    return JSON.stringify({ error: "Beschikbaarheidscheck mislukt: " + availErr.message });
+  }
+
+  if (available === false) {
+    console.log("[TOOL] slot bezet");
+    return JSON.stringify({ error: "Deze tijdslot is al gereserveerd, kies een andere tijd" });
+  }
+
+  console.log("[TOOL] inserting customer");
   const { data: customer, error: customerError } = await supabase
     .from("customers")
     .insert({
@@ -159,9 +182,11 @@ async function executeTool(
     .single();
 
   if (customerError || !customer) {
-    return JSON.stringify({ error: "Kon klant niet aanmaken: " + customerError?.message });
+    console.log("[TOOL ERR customer]", customerError);
+    return JSON.stringify({ error: "Klant aanmaken mislukt: " + (customerError?.message ?? "onbekend") });
   }
 
+  console.log("[TOOL] inserting appointment for customer", customer.id);
   const { data: appointment, error: apptError } = await supabase
     .from("appointments")
     .insert({
@@ -177,9 +202,11 @@ async function executeTool(
     .single();
 
   if (apptError || !appointment) {
-    return JSON.stringify({ error: "Kon afspraak niet inplannen: " + apptError?.message });
+    console.log("[TOOL ERR appointment]", apptError);
+    return JSON.stringify({ error: "Afspraak inplannen mislukt: " + (apptError?.message ?? "onbekend") });
   }
 
+  console.log("[TOOL] success, appointment id:", appointment.id);
   return JSON.stringify({
     success: true,
     appointment_id: appointment.id,
@@ -208,6 +235,7 @@ export async function chatWithAI(
     const response = await callClaudeOnce(systemPrompt, messages);
 
     if (response.error) {
+      console.log("[CHAT ERR]", response.error);
       return { reply: "", error: response.error };
     }
 
