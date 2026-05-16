@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { createBooking } from "./actions";
 import { ArrowRight, Check } from "@/lib/icons";
 
@@ -23,6 +24,11 @@ interface BookingFormProps {
   brandColor: string;
   openingHours: OpeningHours | null;
   slotIntervalMinutes: number;
+}
+
+interface BusySlot {
+  scheduled_at: string;
+  duration_minutes: number;
 }
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -93,6 +99,28 @@ function getTimeSlots(
   return slots;
 }
 
+function isSlotBusy(
+  slotDate: Date,
+  slotTime: string,
+  slotIsOvernight: boolean,
+  durationMinutes: number,
+  busySlots: BusySlot[]
+): boolean {
+  const [h, m] = slotTime.split(":").map(Number);
+  const slotStart = new Date(slotDate);
+  if (slotIsOvernight) {
+    slotStart.setDate(slotStart.getDate() + 1);
+  }
+  slotStart.setHours(h, m, 0, 0);
+  const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60000);
+
+  return busySlots.some((busy) => {
+    const busyStart = new Date(busy.scheduled_at);
+    const busyEnd = new Date(busyStart.getTime() + busy.duration_minutes * 60000);
+    return slotStart < busyEnd && busyStart < slotEnd;
+  });
+}
+
 export function BookingForm({
   businessId,
   serviceId,
@@ -117,9 +145,36 @@ export function BookingForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [busySlots, setBusySlots] = useState<BusySlot[]>([]);
+  const [loadingBusy, setLoadingBusy] = useState(false);
 
   const dateOptions = getDateOptions();
   const timeSlots = date ? getTimeSlots(date, hours, durationMinutes, slotIntervalMinutes) : [];
+
+  useEffect(() => {
+    if (!date) {
+      setBusySlots([]);
+      return;
+    }
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + 1);
+    const nextDateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
+
+    setLoadingBusy(true);
+    const supabase = createClient();
+    Promise.all([
+      supabase.rpc("get_busy_slots", { p_business_id: businessId, p_date: dateStr }),
+      supabase.rpc("get_busy_slots", { p_business_id: businessId, p_date: nextDateStr }),
+    ])
+      .then(([res1, res2]) => {
+        const slots1 = (res1.data as BusySlot[]) || [];
+        const slots2 = (res2.data as BusySlot[]) || [];
+        setBusySlots([...slots1, ...slots2]);
+      })
+      .catch(() => setBusySlots([]))
+      .finally(() => setLoadingBusy(false));
+  }, [date, businessId]);
 
   async function handleSubmit() {
     if (!date || !time) {
@@ -172,7 +227,7 @@ export function BookingForm({
     return date;
   }
 
-  if (confirmed) {
+if (confirmed) {
     const displayDate = getDisplayDate();
     return (
       <div className="bg-paper border border-line rounded-2xl p-10 text-center">
@@ -250,7 +305,10 @@ export function BookingForm({
           <h2 className="font-display font-semibold text-ink mb-2" style={{ fontSize: "22px", letterSpacing: "-0.8px", lineHeight: "1.15" }}>
             Kies een tijd
           </h2>
-          <p className="text-xs text-slate mb-6">Afspraak duurt {durationMinutes} minuten</p>
+          <p className="text-xs text-slate mb-6">
+            Afspraak duurt {durationMinutes} minuten
+            {loadingBusy && <span className="ml-2">· beschikbaarheid laden...</span>}
+          </p>
           {timeSlots.length === 0 ? (
             <div className="bg-paper border border-line rounded-2xl p-8 text-center mb-8">
               <p className="text-sm text-ink-soft">Geen tijden beschikbaar voor deze dag. Kies een andere datum.</p>
@@ -259,15 +317,24 @@ export function BookingForm({
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-8 max-h-[400px] overflow-y-auto pr-1">
               {timeSlots.map((slot) => {
                 const isSelected = time === slot.time && timeIsOvernight === slot.isOvernight;
+                const busy = date ? isSlotBusy(date, slot.time, slot.isOvernight, durationMinutes, busySlots) : false;
                 return (
                   <button
                     key={`${slot.time}-${slot.isOvernight}`}
-                    onClick={() => selectTime(slot)}
-                    className={`py-2.5 rounded-xl border transition font-medium text-sm ${isSelected ? "border-ink bg-ink text-cream" : "border-line bg-paper hover:border-ink text-ink"}`}
+                    onClick={() => !busy && selectTime(slot)}
+                    disabled={busy}
+                    className={`py-2.5 rounded-xl border transition font-medium text-sm ${
+                      isSelected
+                        ? "border-ink bg-ink text-cream"
+                        : busy
+                        ? "border-line bg-paper opacity-30 cursor-not-allowed line-through"
+                        : "border-line bg-paper hover:border-ink text-ink"
+                    }`}
                     style={{ letterSpacing: "-0.2px" }}
                   >
                     {slot.time}
                     {slot.isOvernight && <span className="block text-[10px] opacity-60 font-normal">volgende dag</span>}
+                    {busy && !slot.isOvernight && <span className="block text-[10px] opacity-60 font-normal">bezet</span>}
                   </button>
                 );
               })}
