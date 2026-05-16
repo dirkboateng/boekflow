@@ -26,6 +26,20 @@ export async function createBooking(
 
   const supabase = await createClient();
 
+  const { data: available, error: checkError } = await supabase.rpc("is_slot_available", {
+    p_business_id: data.businessId,
+    p_scheduled_at: data.scheduledAt,
+    p_duration_minutes: data.durationMinutes,
+  });
+
+  if (checkError) {
+    return { success: false, error: "Kon beschikbaarheid niet controleren: " + checkError.message };
+  }
+
+  if (available === false) {
+    return { success: false, error: "Deze tijdslot is net gereserveerd door iemand anders. Kies een andere tijd." };
+  }
+
   const { data: customer, error: customerError } = await supabase
     .from("customers")
     .insert({
